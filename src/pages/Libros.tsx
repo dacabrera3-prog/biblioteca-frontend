@@ -18,7 +18,7 @@ const emptyForm = { titulo: '', autor: '', editorial: '', anio: new Date().getFu
 
 export default function Libros() {
   const { hasRole, usuario } = useAuth();
-  const puedeGestionar = hasRole('ADMINISTRADOR', 'SUBADMINISTRADOR', 'BIBLIOTECARIO');
+  const puedeGestionar = hasRole('BIBLIOTECARIO');
 
   // Costo estimado según rol
   const mostrarCosto = !puedeGestionar && !!usuario;
