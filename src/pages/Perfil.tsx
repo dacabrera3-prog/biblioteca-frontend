@@ -32,8 +32,9 @@ export default function Perfil() {
       await api.patch(`/usuarios/${usuario?.id}`, payload);
       setSuccess('Perfil actualizado correctamente');
       setForm({ ...form, password: '' });
-    } catch {
-      setError('Error al actualizar perfil');
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      setError(msg ? `Error: ${msg}` : 'Error al actualizar perfil');
     } finally {
       setLoading(false);
     }
