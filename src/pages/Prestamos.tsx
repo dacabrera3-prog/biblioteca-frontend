@@ -11,6 +11,7 @@ interface Prestamo {
   fechaDevolucion: string;
   fechaDevueltaReal: string | null;
   estado: string;
+  costoPrestamo?: number;
   tipoDocRetenido?: string;
   observaciones?: string;
   usuario?: { nombre: string; apellido: string; rol: string };
@@ -153,6 +154,7 @@ export default function Prestamos() {
                 <th>F. Préstamo</th>
                 <th>F. Devolución</th>
                 <th>F. Devuelto</th>
+                <th>Costo</th>
                 <th>Estado</th>
                 {esBibliotecario && <th>Doc. Retenido</th>}
                 <th>Acciones</th>
@@ -170,6 +172,7 @@ export default function Prestamos() {
                     <td>{formatFecha(p.fechaPrestamo)}</td>
                     <td>{formatFecha(p.fechaDevolucion)}</td>
                     <td>{formatFecha(p.fechaDevueltaReal)}</td>
+                    <td>${(p.costoPrestamo ?? 0).toFixed(2)}</td>
                     <td><span className={`badge ${estadoBadge(p.estado)}`}>{p.estado}</span></td>
                     {esBibliotecario && <td>{p.tipoDocRetenido ?? '—'}</td>}
                     <td className="actions">
@@ -191,14 +194,14 @@ export default function Prestamos() {
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h3>Nuevo préstamo</h3>
-            {(esProfesor) && (
-              <div className="info-box">✅ Préstamo gratuito — no se cobran multas por retraso (Profesor)</div>
+                    {(esProfesor) && (
+              <div className="info-box">✅ Préstamo gratuito — $0.00 y sin multa por retraso (Profesor)</div>
             )}
             {(esEstudiante) && (
-              <div className="info-box info-yellow">📌 Multa con 50% de descuento si devuelves tarde — $0.25/día (Estudiante)</div>
+              <div className="info-box info-yellow">📌 Costo del préstamo: $0.50 (50% descuento). Multa $0.25/día si devuelves tarde (Estudiante)</div>
             )}
             {!esProfesor && !esEstudiante && (
-              <div className="info-box info-yellow">⚠️ Máximo 10 días de préstamo. Multa de $0.50 por día de retraso.</div>
+              <div className="info-box info-yellow">⚠️ Costo del préstamo: $1.00. Máximo 10 días. Multa $0.50/día por retraso.</div>
             )}
             <form onSubmit={handleCreate} className="modal-form">
               {esAdminOBiblio && (
