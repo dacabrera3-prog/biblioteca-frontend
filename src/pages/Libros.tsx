@@ -58,9 +58,30 @@ export default function Libros() {
 
   useEffect(() => { fetchLibros(); }, []);
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    fetchLibros(buscar);
+    if (!buscar.trim()) {
+      fetchLibros();
+      return;
+    }
+    // Si tiene comas, dividir y filtrar en frontend
+    if (buscar.includes(',')) {
+      const terminos = buscar.split(',').map(t => t.trim().toLowerCase()).filter(t => t);
+      const res = await api.get('/libros');
+      const todos: Libro[] = res.data;
+      const filtrados = todos.filter(l =>
+        terminos.every(t =>
+          l.titulo.toLowerCase().includes(t) ||
+          l.autor.toLowerCase().includes(t) ||
+          l.editorial.toLowerCase().includes(t) ||
+          String(l.anio).includes(t)
+        )
+      );
+      setTodosLosLibros(filtrados);
+      setLibros(filtrados);
+    } else {
+      fetchLibros(buscar);
+    }
   };
 
   const openCreate = () => {
@@ -120,7 +141,7 @@ export default function Libros() {
       <form onSubmit={handleSearch} className="search-bar">
         <input
           type="text"
-          placeholder="Buscar por título, autor, editorial..."
+          placeholder="Buscar por título, autor, editorial... (separa con comas)"
           value={buscar}
           onChange={(e) => setBuscar(e.target.value)}
         />
