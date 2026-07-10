@@ -21,7 +21,9 @@ export default function Libros() {
   const puedeGestionar = hasRole('ADMINISTRADOR', 'SUBADMINISTRADOR', 'BIBLIOTECARIO');
 
   const [libros, setLibros] = useState<Libro[]>([]);
+  const [todosLosLibros, setTodosLosLibros] = useState<Libro[]>([]);
   const [buscar, setBuscar] = useState('');
+  const [filtroAnio, setFiltroAnio] = useState('');
   const [form, setForm] = useState(emptyForm);
   const [editId, setEditId] = useState<number | null>(null);
   const [showModal, setShowModal] = useState(false);
@@ -33,6 +35,7 @@ export default function Libros() {
     try {
       const url = q ? `/libros?buscar=${q}` : '/libros';
       const res = await api.get(url);
+      setTodosLosLibros(res.data);
       setLibros(res.data);
     } catch {
       setError('Error al cargar libros');
@@ -40,6 +43,15 @@ export default function Libros() {
       setLoading(false);
     }
   };
+
+  // Filtrar por año en el frontend
+  useEffect(() => {
+    if (filtroAnio.trim() === '') {
+      setLibros(todosLosLibros);
+    } else {
+      setLibros(todosLosLibros.filter(l => String(l.anio).includes(filtroAnio.trim())));
+    }
+  }, [filtroAnio, todosLosLibros]);
 
   useEffect(() => { fetchLibros(); }, []);
 
@@ -108,6 +120,20 @@ export default function Libros() {
           </button>
         )}
       </form>
+      <div className="search-bar" style={{ marginTop: '-10px' }}>
+        <input
+          type="number"
+          placeholder="Filtrar por año (ej: 1997)"
+          value={filtroAnio}
+          onChange={(e) => setFiltroAnio(e.target.value)}
+          style={{ maxWidth: '220px' }}
+        />
+        {filtroAnio && (
+          <button type="button" className="btn-ghost" onClick={() => setFiltroAnio('')}>
+            Limpiar año
+          </button>
+        )}
+      </div>
 
       {error && <p className="error-msg">{error}</p>}
 
