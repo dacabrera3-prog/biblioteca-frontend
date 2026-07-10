@@ -5,11 +5,30 @@ import Layout from '../components/Layout';
 interface Usuario {
   id: number;
   nombre: string;
+  apellido: string;
   email: string;
   rol: string;
 }
 
-const emptyForm = { nombre: '', email: '', password: '', rol: 'USER' };
+const emptyForm = { nombre: '', apellido: '', email: '', password: '', rol: 'CLIENTE' };
+
+const rolLabel: Record<string, string> = {
+  ADMINISTRADOR: 'Administrador',
+  SUBADMINISTRADOR: 'Subadministrador',
+  BIBLIOTECARIO: 'Bibliotecario',
+  PROFESOR: 'Profesor',
+  ESTUDIANTE: 'Estudiante',
+  CLIENTE: 'Cliente',
+};
+
+const rolBadge: Record<string, string> = {
+  ADMINISTRADOR: 'badge-admin',
+  SUBADMINISTRADOR: 'badge-admin',
+  BIBLIOTECARIO: 'badge-active',
+  PROFESOR: 'badge-active',
+  ESTUDIANTE: 'badge-user',
+  CLIENTE: 'badge-user',
+};
 
 export default function Usuarios() {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
@@ -40,7 +59,7 @@ export default function Usuarios() {
   };
 
   const openEdit = (u: Usuario) => {
-    setForm({ nombre: u.nombre, email: u.email, password: '', rol: u.rol });
+    setForm({ nombre: u.nombre, apellido: u.apellido ?? '', email: u.email, password: '', rol: u.rol });
     setEditId(u.id);
     setShowModal(true);
   };
@@ -49,7 +68,7 @@ export default function Usuarios() {
     e.preventDefault();
     try {
       if (editId) {
-        const payload: Record<string, string> = { nombre: form.nombre, email: form.email, rol: form.rol };
+        const payload: Record<string, string> = { nombre: form.nombre, apellido: form.apellido, email: form.email, rol: form.rol };
         if (form.password) payload.password = form.password;
         await api.patch(`/usuarios/${editId}`, payload);
       } else {
@@ -90,6 +109,7 @@ export default function Usuarios() {
               <tr>
                 <th>ID</th>
                 <th>Nombre</th>
+                <th>Apellido</th>
                 <th>Email</th>
                 <th>Rol</th>
                 <th>Acciones</th>
@@ -97,14 +117,15 @@ export default function Usuarios() {
             </thead>
             <tbody>
               {usuarios.length === 0 ? (
-                <tr><td colSpan={5} className="empty">No hay usuarios</td></tr>
+                <tr><td colSpan={6} className="empty">No hay usuarios</td></tr>
               ) : (
                 usuarios.map((u) => (
                   <tr key={u.id}>
                     <td>{u.id}</td>
                     <td>{u.nombre}</td>
+                    <td>{u.apellido}</td>
                     <td>{u.email}</td>
-                    <td><span className={`badge ${u.rol === 'ADMIN' ? 'badge-admin' : 'badge-user'}`}>{u.rol}</span></td>
+                    <td><span className={`badge ${rolBadge[u.rol] ?? 'badge-user'}`}>{rolLabel[u.rol] ?? u.rol}</span></td>
                     <td className="actions">
                       <button className="btn-edit" onClick={() => openEdit(u)}>Editar</button>
                       <button className="btn-delete" onClick={() => handleDelete(u.id)}>Eliminar</button>
@@ -122,9 +143,15 @@ export default function Usuarios() {
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h3>{editId ? 'Editar usuario' : 'Nuevo usuario'}</h3>
             <form onSubmit={handleSave} className="modal-form">
-              <div className="form-group">
-                <label>Nombre</label>
-                <input value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })} required />
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Nombre</label>
+                  <input value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })} required />
+                </div>
+                <div className="form-group">
+                  <label>Apellido</label>
+                  <input value={form.apellido} onChange={(e) => setForm({ ...form, apellido: e.target.value })} required />
+                </div>
               </div>
               <div className="form-group">
                 <label>Email</label>
@@ -143,8 +170,12 @@ export default function Usuarios() {
               <div className="form-group">
                 <label>Rol</label>
                 <select value={form.rol} onChange={(e) => setForm({ ...form, rol: e.target.value })}>
-                  <option value="USER">USER</option>
-                  <option value="ADMIN">ADMIN</option>
+                  <option value="ADMINISTRADOR">Administrador</option>
+                  <option value="SUBADMINISTRADOR">Subadministrador</option>
+                  <option value="BIBLIOTECARIO">Bibliotecario</option>
+                  <option value="PROFESOR">Profesor</option>
+                  <option value="ESTUDIANTE">Estudiante</option>
+                  <option value="CLIENTE">Cliente</option>
                 </select>
               </div>
               <div className="modal-actions">
