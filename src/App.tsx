@@ -3,6 +3,7 @@ import { AuthProvider } from './context/AuthContext';
 import PrivateRoute from './components/PrivateRoute';
 import RoleRoute from './components/RoleRoute';
 import Login from './pages/Login';
+import Register from './pages/Register';
 import Libros from './pages/Libros';
 import Usuarios from './pages/Usuarios';
 import Prestamos from './pages/Prestamos';
@@ -16,6 +17,7 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
           <Route path="/libros" element={<PrivateRoute><Libros /></PrivateRoute>} />
           <Route path="/prestamos" element={<PrivateRoute><Prestamos /></PrivateRoute>} />

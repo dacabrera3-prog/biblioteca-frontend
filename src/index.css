@@ -498,3 +498,28 @@ body {
   grid-template-columns: 1fr 1fr;
   gap: 16px;
 }
+
+/* ---- REGISTER LINKS ---- */
+.register-link {
+  text-align: center;
+  font-size: 14px;
+  color: #718096;
+  margin-top: 4px;
+}
+
+.register-link a {
+  color: #2d6a9f;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.register-link a:hover { text-decoration: underline; }
+
+.register-note {
+  font-size: 13px;
+  color: #718096;
+  background: #f7fafc;
+  border-radius: 8px;
+  padding: 8px 12px;
+  text-align: center;
+}

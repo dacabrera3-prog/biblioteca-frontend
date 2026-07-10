@@ -1,11 +1,13 @@
 import { useState, FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const registered = (location.state as { registered?: boolean })?.registered;
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -35,6 +37,7 @@ export default function Login() {
           <p>Sistema de Gestión</p>
         </div>
         <form onSubmit={handleSubmit} className="login-form">
+          {registered && <p className="success-msg">✅ Cuenta creada. Ya puedes ingresar.</p>}
           <div className="form-group">
             <label htmlFor="email">Email</label>
             <input
@@ -61,6 +64,9 @@ export default function Login() {
           <button type="submit" className="btn-primary" disabled={loading}>
             {loading ? 'Ingresando...' : 'Ingresar'}
           </button>
+          <p className="register-link">
+            ¿No tienes cuenta? <Link to="/register">Regístrate</Link>
+          </p>
         </form>
       </div>
     </div>
