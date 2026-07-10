@@ -1,22 +1,28 @@
 import { useEffect, useState } from 'react';
 import api from '../api/axios';
 import Layout from '../components/Layout';
+import { useAuth } from '../context/AuthContext';
 
 interface Libro {
   id: number;
   titulo: string;
   autor: string;
-  isbn: string;
-  cantidad: number;
-  disponibles?: number;
+  editorial: string;
+  anio: number;
+  isbn?: string;
+  stock: number;
+  disponibles: number;
 }
 
-const emptyForm: Omit<Libro, 'id'> = { titulo: '', autor: '', isbn: '', cantidad: 1 };
+const emptyForm = { titulo: '', autor: '', editorial: '', anio: new Date().getFullYear(), isbn: '', stock: 1 };
 
 export default function Libros() {
+  const { hasRole } = useAuth();
+  const puedeGestionar = hasRole('ADMINISTRADOR', 'SUBADMINISTRADOR', 'BIBLIOTECARIO');
+
   const [libros, setLibros] = useState<Libro[]>([]);
   const [buscar, setBuscar] = useState('');
-  const [form, setForm] = useState<Omit<Libro, 'id'>>(emptyForm);
+  const [form, setForm] = useState(emptyForm);
   const [editId, setEditId] = useState<number | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -49,7 +55,7 @@ export default function Libros() {
   };
 
   const openEdit = (libro: Libro) => {
-    setForm({ titulo: libro.titulo, autor: libro.autor, isbn: libro.isbn, cantidad: libro.cantidad });
+    setForm({ titulo: libro.titulo, autor: libro.autor, editorial: libro.editorial, anio: libro.anio, isbn: libro.isbn ?? '', stock: libro.stock });
     setEditId(libro.id);
     setShowModal(true);
   };
@@ -83,13 +89,15 @@ export default function Libros() {
     <Layout>
       <div className="page-header">
         <h2>📖 Libros</h2>
-        <button className="btn-primary" onClick={openCreate}>+ Nuevo libro</button>
+        {puedeGestionar && (
+          <button className="btn-primary" onClick={openCreate}>+ Nuevo libro</button>
+        )}
       </div>
 
       <form onSubmit={handleSearch} className="search-bar">
         <input
           type="text"
-          placeholder="Buscar por título o autor..."
+          placeholder="Buscar por título, autor, editorial..."
           value={buscar}
           onChange={(e) => setBuscar(e.target.value)}
         />
@@ -113,26 +121,38 @@ export default function Libros() {
                 <th>ID</th>
                 <th>Título</th>
                 <th>Autor</th>
+                <th>Editorial</th>
+                <th>Año</th>
                 <th>ISBN</th>
-                <th>Cantidad</th>
-                <th>Acciones</th>
+                <th>Stock</th>
+                <th>Disponibles</th>
+                {puedeGestionar && <th>Acciones</th>}
               </tr>
             </thead>
             <tbody>
               {libros.length === 0 ? (
-                <tr><td colSpan={6} className="empty">No hay libros</td></tr>
+                <tr><td colSpan={puedeGestionar ? 9 : 8} className="empty">No hay libros</td></tr>
               ) : (
                 libros.map((l) => (
                   <tr key={l.id}>
                     <td>{l.id}</td>
                     <td>{l.titulo}</td>
                     <td>{l.autor}</td>
-                    <td>{l.isbn}</td>
-                    <td>{l.cantidad}</td>
-                    <td className="actions">
-                      <button className="btn-edit" onClick={() => openEdit(l)}>Editar</button>
-                      <button className="btn-delete" onClick={() => handleDelete(l.id)}>Eliminar</button>
+                    <td>{l.editorial}</td>
+                    <td>{l.anio}</td>
+                    <td>{l.isbn ?? '—'}</td>
+                    <td>{l.stock}</td>
+                    <td>
+                      <span className={`badge ${l.disponibles > 0 ? 'badge-active' : 'badge-pending'}`}>
+                        {l.disponibles}
+                      </span>
                     </td>
+                    {puedeGestionar && (
+                      <td className="actions">
+                        <button className="btn-edit" onClick={() => openEdit(l)}>Editar</button>
+                        <button className="btn-delete" onClick={() => handleDelete(l.id)}>Eliminar</button>
+                      </td>
+                    )}
                   </tr>
                 ))
               )}
@@ -155,12 +175,20 @@ export default function Libros() {
                 <input value={form.autor} onChange={(e) => setForm({ ...form, autor: e.target.value })} required />
               </div>
               <div className="form-group">
-                <label>ISBN</label>
-                <input value={form.isbn} onChange={(e) => setForm({ ...form, isbn: e.target.value })} required />
+                <label>Editorial</label>
+                <input value={form.editorial} onChange={(e) => setForm({ ...form, editorial: e.target.value })} required />
               </div>
               <div className="form-group">
-                <label>Cantidad</label>
-                <input type="number" min={1} value={form.cantidad} onChange={(e) => setForm({ ...form, cantidad: Number(e.target.value) })} required />
+                <label>Año</label>
+                <input type="number" value={form.anio} onChange={(e) => setForm({ ...form, anio: Number(e.target.value) })} required />
+              </div>
+              <div className="form-group">
+                <label>ISBN (opcional)</label>
+                <input value={form.isbn} onChange={(e) => setForm({ ...form, isbn: e.target.value })} />
+              </div>
+              <div className="form-group">
+                <label>Stock</label>
+                <input type="number" min={1} value={form.stock} onChange={(e) => setForm({ ...form, stock: Number(e.target.value) })} required />
               </div>
               <div className="modal-actions">
                 <button type="button" className="btn-ghost" onClick={() => setShowModal(false)}>Cancelar</button>

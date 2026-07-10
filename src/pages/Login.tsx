@@ -17,7 +17,7 @@ export default function Login() {
     setLoading(true);
     try {
       const res = await api.post('/auth/login', { email, password });
-      login(res.data.access_token);
+      login(res.data.access_token, res.data.usuario);
       navigate('/libros');
     } catch {
       setError('Credenciales incorrectas. Verifica tu email y contraseña.');

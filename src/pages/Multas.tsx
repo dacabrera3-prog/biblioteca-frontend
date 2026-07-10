@@ -1,18 +1,23 @@
 import { useEffect, useState } from 'react';
 import api from '../api/axios';
 import Layout from '../components/Layout';
+import { useAuth } from '../context/AuthContext';
 
 interface Multa {
   id: number;
   usuarioId: number;
   prestamoId: number;
   monto: number;
-  pagada: boolean;
-  usuario?: { nombre: string };
+  diasRetraso: number;
+  estado: string;
+  usuario?: { nombre: string; apellido: string };
   prestamo?: { id: number };
 }
 
 export default function Multas() {
+  const { hasRole, usuario: usuarioActual } = useAuth();
+  const esAdminOBiblio = hasRole('ADMINISTRADOR', 'SUBADMINISTRADOR', 'BIBLIOTECARIO');
+
   const [multas, setMultas] = useState<Multa[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -20,8 +25,15 @@ export default function Multas() {
   const fetchMultas = async () => {
     setLoading(true);
     try {
-      const res = await api.get('/multas');
-      setMultas(res.data);
+      let data;
+      if (esAdminOBiblio) {
+        const res = await api.get('/multas');
+        data = res.data;
+      } else {
+        const res = await api.get(`/multas/usuario/${usuarioActual?.id}`);
+        data = res.data;
+      }
+      setMultas(data);
     } catch {
       setError('Error al cargar multas');
     } finally {
@@ -41,8 +53,8 @@ export default function Multas() {
     }
   };
 
-  const pendientes = multas.filter((m) => !m.pagada);
-  const pagadas = multas.filter((m) => m.pagada);
+  const pendientes = multas.filter((m) => m.estado === 'PENDIENTE');
+  const pagadas = multas.filter((m) => m.estado === 'PAGADA');
 
   return (
     <Layout>
@@ -64,35 +76,39 @@ export default function Multas() {
             <thead>
               <tr>
                 <th>ID</th>
-                <th>Usuario</th>
+                {esAdminOBiblio && <th>Usuario</th>}
                 <th>Préstamo #</th>
+                <th>Días retraso</th>
                 <th>Monto</th>
                 <th>Estado</th>
-                <th>Acciones</th>
+                {esAdminOBiblio && <th>Acciones</th>}
               </tr>
             </thead>
             <tbody>
               {multas.length === 0 ? (
-                <tr><td colSpan={6} className="empty">No hay multas registradas</td></tr>
+                <tr><td colSpan={7} className="empty">No hay multas registradas</td></tr>
               ) : (
                 multas.map((m) => (
                   <tr key={m.id}>
                     <td>{m.id}</td>
-                    <td>{m.usuario?.nombre || `Usuario #${m.usuarioId}`}</td>
+                    {esAdminOBiblio && <td>{m.usuario ? `${m.usuario.nombre} ${m.usuario.apellido}` : `#${m.usuarioId}`}</td>}
                     <td>{m.prestamoId}</td>
+                    <td>{m.diasRetraso}</td>
                     <td>${m.monto?.toFixed(2)}</td>
                     <td>
-                      <span className={`badge ${m.pagada ? 'badge-done' : 'badge-pending'}`}>
-                        {m.pagada ? 'Pagada' : 'Pendiente'}
+                      <span className={`badge ${m.estado === 'PAGADA' ? 'badge-done' : 'badge-pending'}`}>
+                        {m.estado}
                       </span>
                     </td>
-                    <td className="actions">
-                      {!m.pagada && (
-                        <button className="btn-edit" onClick={() => handlePagar(m.id)}>
-                          Pagar
-                        </button>
-                      )}
-                    </td>
+                    {esAdminOBiblio && (
+                      <td className="actions">
+                        {m.estado === 'PENDIENTE' && (
+                          <button className="btn-edit" onClick={() => handlePagar(m.id)}>
+                            Pagar
+                          </button>
+                        )}
+                      </td>
+                    )}
                   </tr>
                 ))
               )}
