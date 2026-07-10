@@ -198,10 +198,10 @@ export default function Prestamos() {
               <div className="info-box">✅ Préstamo gratuito — $0.00 y sin multa por retraso (Profesor)</div>
             )}
             {(esEstudiante) && (
-              <div className="info-box info-yellow">📌 Costo del préstamo: $0.50 (50% descuento). Multa $0.25/día si devuelves tarde (Estudiante)</div>
+              <div className="info-box info-yellow">📌 Costo del préstamo: $1.00 (50% descuento). Multa $0.25/día si devuelves tarde (Estudiante)</div>
             )}
             {!esProfesor && !esEstudiante && (
-              <div className="info-box info-yellow">⚠️ Costo del préstamo: $1.00. Máximo 10 días. Multa $0.50/día por retraso.</div>
+              <div className="info-box info-yellow">⚠️ Costo del préstamo: $2.00. Máximo 10 días. Multa $0.50/día por retraso.</div>
             )}
             <form onSubmit={handleCreate} className="modal-form">
               {esAdminOBiblio && (

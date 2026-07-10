@@ -17,8 +17,11 @@ interface Libro {
 const emptyForm = { titulo: '', autor: '', editorial: '', anio: new Date().getFullYear(), isbn: '', stock: 1 };
 
 export default function Libros() {
-  const { hasRole } = useAuth();
+  const { hasRole, usuario } = useAuth();
   const puedeGestionar = hasRole('ADMINISTRADOR', 'SUBADMINISTRADOR', 'BIBLIOTECARIO');
+
+  // Costo estimado según rol
+  const mostrarCosto = !puedeGestionar && !!usuario;
 
   const [libros, setLibros] = useState<Libro[]>([]);
   const [todosLosLibros, setTodosLosLibros] = useState<Libro[]>([]);
@@ -105,6 +108,14 @@ export default function Libros() {
           <button className="btn-primary" onClick={openCreate}>+ Nuevo libro</button>
         )}
       </div>
+
+      {mostrarCosto && (
+        <div className={`info-box ${hasRole('PROFESOR') ? '' : 'info-yellow'}`} style={{ marginBottom: '16px' }}>
+          {hasRole('PROFESOR') && '✅ Préstamos gratuitos para ti'}
+          {hasRole('ESTUDIANTE') && '📌 Costo por préstamo: $1.00 (50% descuento aplicado)'}
+          {!hasRole('PROFESOR') && !hasRole('ESTUDIANTE') && '⚠️ Costo por préstamo: $2.00 — máximo 10 días'}
+        </div>
+      )}
 
       <form onSubmit={handleSearch} className="search-bar">
         <input
