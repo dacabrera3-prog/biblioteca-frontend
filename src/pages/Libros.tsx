@@ -144,7 +144,7 @@ export default function Libros() {
       <form onSubmit={handleSearch} className="search-bar">
         <input
           type="text"
-          placeholder="Buscar por título, autor, editorial... (separa con comas)"
+          placeholder="Buscar por título, autor, editorial..."
           value={buscar}
           onChange={(e) => setBuscar(e.target.value)}
         />
