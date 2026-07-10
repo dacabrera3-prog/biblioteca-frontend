@@ -64,9 +64,10 @@ export default function Libros() {
       fetchLibros();
       return;
     }
-    // Si tiene comas, dividir y filtrar en frontend
-    if (buscar.includes(',')) {
-      const terminos = buscar.split(',').map(t => t.trim().toLowerCase()).filter(t => t);
+    // Siempre traer todos y filtrar en frontend por múltiples términos
+    const terminos = buscar.split(/[,\s]+/).map(t => t.trim().toLowerCase()).filter(t => t);
+    setLoading(true);
+    try {
       const res = await api.get('/libros');
       const todos: Libro[] = res.data;
       const filtrados = todos.filter(l =>
@@ -79,8 +80,10 @@ export default function Libros() {
       );
       setTodosLosLibros(filtrados);
       setLibros(filtrados);
-    } else {
-      fetchLibros(buscar);
+    } catch {
+      setError('Error al buscar libros');
+    } finally {
+      setLoading(false);
     }
   };
 
