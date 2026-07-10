@@ -192,10 +192,13 @@ export default function Prestamos() {
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h3>Nuevo préstamo</h3>
             {(esProfesor) && (
-              <div className="info-box">✅ Préstamo gratuito (Profesor)</div>
+              <div className="info-box">✅ Préstamo gratuito — no se cobran multas por retraso (Profesor)</div>
             )}
             {(esEstudiante) && (
-              <div className="info-box info-yellow">📌 Aplica 50% de descuento (Estudiante)</div>
+              <div className="info-box info-yellow">📌 Multa con 50% de descuento si devuelves tarde — $0.25/día (Estudiante)</div>
+            )}
+            {!esProfesor && !esEstudiante && (
+              <div className="info-box info-yellow">⚠️ Máximo 10 días de préstamo. Multa de $0.50 por día de retraso.</div>
             )}
             <form onSubmit={handleCreate} className="modal-form">
               {esAdminOBiblio && (
